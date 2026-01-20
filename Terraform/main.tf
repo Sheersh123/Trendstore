@@ -19,10 +19,22 @@ resource "aws_internet_gateway" "igw" {
     Name = "${var.project_name}-igw"
   }
 }
+locals {
+  public_subnet_cidrs = [
+    cidrsubnet(aws_vpc.main.cidr_block, 4, 0),
+    cidrsubnet(aws_vpc.main.cidr_block, 4, 1)
+  ]
+
+  private_subnet_cidrs = [
+    cidrsubnet(aws_vpc.main.cidr_block, 4, 2),
+    cidrsubnet(aws_vpc.main.cidr_block, 4, 3)
+  ]
+}
+
 resource "aws_subnet" "public" {
   count                   = 2
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidrs[count.index]
+  cidr_block              = local.public_subnet_cidrs[count.index]
   map_public_ip_on_launch = true
 
   tags = {
@@ -33,7 +45,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   count                   = 2
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.private_subnet_cidrs[count.index]
+  cidr_block              = local.private_subnet_cidrs[count.index]
   map_public_ip_on_launch = false
 
   tags = {
@@ -148,12 +160,13 @@ resource "aws_instance" "jenkins" {
 
     dnf update -y
     dnf upgrade -y
-    dnf install docker.io
+    dnf install -y docker
     systemctl enable docker
     systemctl start docker
-    dnf install fontconfig java-21-openjdk
+    dnf install -y fontconfig java-21-openjdk
     dnf install wget -y 
-    sudo wget -O /etc/yum.repos.d/jenkins.repo \ https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
     dnf install -y jenkins
     systemctl daemon-reload
     systemctl enable jenkins

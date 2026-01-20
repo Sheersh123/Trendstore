@@ -23,7 +23,7 @@ variable "public_subnet_cidrs" {
 variable "private_subnet_cidrs" {
   description = "Two private subnet CIDRs"
   type        = list(string)
-  default     = ["", ""]
+  default     = ["172.31.32.0/20", "172.31.50.0/28"]
 }
 
 variable "main_cidr" {
