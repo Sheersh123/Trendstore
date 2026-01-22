@@ -163,7 +163,7 @@ resource "aws_instance" "jenkins" {
     dnf install -y docker
     systemctl enable docker
     systemctl start docker
-    dnf install -y fontconfig java-21-openjdk
+    dnf install -y fontconfig java-21-amazon-corretto-devel
     dnf install wget -y 
     sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
     sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
