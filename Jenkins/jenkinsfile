@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_CREDS = 'dockerhub-creds'
+    DOCKERHUB_CREDS = 'dockerhub-cred'
     DOCKERHUB_USER  = 'sheershsinha'
     IMAGE_NAME      = 'sheershsinha/trendstore:v1'
     IMAGE           = "${DOCKERHUB_USER}/${IMAGE_NAME}"  // Secret file credential
@@ -19,7 +19,7 @@ pipeline {
   steps {
     script {
       def img = docker.build("${IMAGE_NAME}", ".")
-      docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds-id') {
+      docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-cred') {
         img.push()
         img.push('latest')
       }
