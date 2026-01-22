@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_CREDS = 'dockerhub_cred'
+    DOCKERHUB_CREDS = 'Token-02'
     DOCKERHUB_USER  = 'sheershsinha'
     IMAGE_NAME      = 'sheershsinha/trendstore'
     IMAGE_TAG       =  'v1'
