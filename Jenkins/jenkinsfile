@@ -2,33 +2,71 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_CREDS = 'Token-02'
-    DOCKERHUB_USER  = 'sheershsinha'
-    IMAGE_NAME      = 'sheershsinha/trendstore'
-    IMAGE_TAG       =  'v1'
-    IMAGE           = "${DOCKERHUB_USER}/${IMAGE_NAME}"  // Secret file credential
+    // Docker
+    IMAGE       = "sheershsinha/trendstore"
+    TAG         = "v1"
+
+    // EKS
+    AWS_REGION  = "us-east-2"
+    CLUSTER_NAME = "trendstore-eks"
   }
 
   stages {
-    stage('Checkout') {
+
+    stage('Checkout Code') {
       steps {
-        checkout scm
+        git branch: 'main', url: 'https://github.com/Sheersh123/Trendstore.git'
       }
     }
 
-   stage('Build & Push Image') {
-  steps {
-    script {
-      def img = docker.build("${IMAGE_NAME}:${IMAGE_TAG}", ".")
-      docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDS) {
-        img.push()
-        img.push('latest')
+    stage('Build Docker Image') {
+      steps {
+        sh '''
+          docker build -t $IMAGE:$TAG .
+        '''
+      }
+    }
+
+    stage('Login to DockerHub & Push') {
+      steps {
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'Token-02',   // Jenkins Credential ID (must match exactly)
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+          )
+        ]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker push $IMAGE:$TAG
+            docker tag  $IMAGE:$TAG $IMAGE:latest
+            docker push $IMAGE:latest
+          '''
+        }
+      }
+    }
+
+    stage('Update kubeconfig for EKS') {
+      steps {
+        // Requires AWS CLI configured + permissions to describe the cluster
+        sh '''
+          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+        '''
+      }
+    }
+
+    stage('Deploy to EKS via kubectl') {
+      steps {
+        sh '''
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
+
+          echo "Waiting for rollout..."
+          kubectl rollout status deployment/trendstore-deployment
+        '''
       }
     }
   }
-}
-
-   }
 
   post {
     always {
