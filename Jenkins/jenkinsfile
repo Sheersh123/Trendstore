@@ -8,7 +8,7 @@ pipeline {
 
     // EKS
     AWS_REGION  = "us-east-2"
-    CLUSTER_NAME = "trendstore-eks"
+    CLUSTER_NAME = "Trendstore-eks"
   }
 
   stages {
