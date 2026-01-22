@@ -50,6 +50,8 @@ pipeline {
       steps {
         // Requires AWS CLI configured + permissions to describe the cluster
         sh '''
+          echo "AWS_REGION=$AWS_REGION"
+          echo "CLUSTER_NAME=$CLUSTER_NAME"
           aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
         '''
       }
