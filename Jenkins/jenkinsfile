@@ -1,0 +1,43 @@
+pipeline {
+  agent any
+
+  environment {
+    DOCKERHUB_CREDS = 'dockerhub-creds'        // Jenkins credential ID (Username/Password)
+    DOCKERHUB_USER  = 'sheershsinha'    // change
+    IMAGE_NAME      = 'sheershsinha/trendstore:v1'                  // change if you want
+    IMAGE           = "${DOCKERHUB_USER}/${IMAGE_NAME}"
+    K8S_NAMESPACE   = 'default'
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Build Docker image') {
+      steps {
+        script {
+          // tag with build number + latest
+          dockerImage = docker.build("${IMAGE}:${env.BUILD_NUMBER}")
+        }
+      }
+    }
+    stage('Push to Docker Hub') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDS) {
+            dockerImage.push()
+            dockerImage.push('latest')
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      sh "docker system prune -af || true"
+    }
+  }
+}
