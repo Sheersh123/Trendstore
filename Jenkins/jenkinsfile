@@ -19,7 +19,7 @@ pipeline {
   steps {
     script {
       def img = docker.build("${IMAGE_NAME}", ".")
-      docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-cred') {
+      docker.withRegistry('https://index.docker.io/v1/', 'jenkins-token') {
         img.push()
         img.push('latest')
       }
