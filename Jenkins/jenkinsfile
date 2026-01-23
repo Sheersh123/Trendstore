@@ -9,6 +9,7 @@ pipeline {
     // EKS
     AWS_REGION  = "us-east-2"
     CLUSTER_NAME = "Trendstore-eks"
+    KUBECONFIG = "${WORKSPACE}/kubeconfig"
   }
 
   stages {
@@ -52,7 +53,8 @@ pipeline {
         sh '''
           echo "AWS_REGION=$AWS_REGION"
           echo "CLUSTER_NAME=$CLUSTER_NAME"
-          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+          aws sts get-caller-identity
+          aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME --kubeconfig "$KUBECONFIG"
         '''
       }
     }
@@ -61,7 +63,9 @@ pipeline {
       steps {
         dir ('Kubernetes') {
         sh '''
+          echo "Using KUBECONFIG=$KUBECONFIG"
           ls -la
+          kubectl get ns
           kubectl apply -f deployment.yml
           kubectl apply -f service.yml
 
