@@ -59,7 +59,9 @@ pipeline {
 
     stage('Deploy to EKS via kubectl') {
       steps {
+        dir {'Kubernetes'}
         sh '''
+          ls -la
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml
 
