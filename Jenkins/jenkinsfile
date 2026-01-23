@@ -1,25 +1,18 @@
 pipeline {
   agent any
-
   environment {
-    // Docker
     IMAGE       = "sheershsinha/trendstore"
     TAG         = "v1"
-
-    // EKS
     AWS_REGION  = "us-east-2"
     CLUSTER_NAME = "Trendstore-eks"
     KUBECONFIG = "${WORKSPACE}/kubeconfig"
   }
-
   stages {
-
     stage('Checkout Code') {
       steps {
         git branch: 'main', url: 'https://github.com/Sheersh123/Trendstore.git'
       }
     }
-
     stage('Build Docker Image') {
       steps {
         sh '''
@@ -27,12 +20,11 @@ pipeline {
         '''
       }
     }
-
     stage('Login to DockerHub & Push') {
       steps {
         withCredentials([
           usernamePassword(
-            credentialsId: 'Token-02',   // Jenkins Credential ID (must match exactly)
+            credentialsId: 'Token-02',   
             usernameVariable: 'DOCKER_USER',
             passwordVariable: 'DOCKER_PASS'
           )
@@ -46,10 +38,8 @@ pipeline {
         }
       }
     }
-
     stage('Update kubeconfig for EKS') {
       steps {
-        // Requires AWS CLI configured + permissions to describe the cluster
         sh '''
           echo "AWS_REGION=$AWS_REGION"
           echo "CLUSTER_NAME=$CLUSTER_NAME"
@@ -58,7 +48,6 @@ pipeline {
         '''
       }
     }
-
     stage('Deploy to EKS via kubectl') {
       steps {
         dir ('Kubernetes') {
@@ -68,7 +57,6 @@ pipeline {
           kubectl get ns
           kubectl apply -f deployment.yml
           kubectl apply -f service.yml
-
           echo "Waiting for rollout..."
           kubectl rollout status deployment/trendstore
         '''
@@ -76,7 +64,6 @@ pipeline {
     }
     }
   }
-
   post {
     always {
       sh 'docker system prune -af || true'
