@@ -59,16 +59,17 @@ pipeline {
 
     stage('Deploy to EKS via kubectl') {
       steps {
-        dir {'Kubernetes'}
+        dir ('Kubernetes') {
         sh '''
           ls -la
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
+          kubectl apply -f deployment.yml
+          kubectl apply -f service.yml
 
           echo "Waiting for rollout..."
           kubectl rollout status deployment/trendstore-deployment
         '''
       }
+    }
     }
   }
 
