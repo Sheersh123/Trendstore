@@ -20,6 +20,8 @@
 
 The application is served using **Nginx** inside a Docker container, orchestrated by Kubernetes, and the underlying infrastructure is provisioned using **Terraform**.
 
+> **[📄 View Detailed Deployment Docs](https://docs.google.com/document/d/1_SlsETW7eGoQoe9oSIh48X_nFEp_0DA7d5wRKBOtdYc/edit?usp=sharing)**
+
 ---
 
 ## 🛠️ Technology Stack
